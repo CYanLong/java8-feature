@@ -1,4 +1,4 @@
-package com.cyl.java8.stream;
+package com.cyl.java8.funInterface;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,9 +12,10 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
+ * 通过java8 提供的一些函数式接口实现高阶函数.
  * @author Yanlong Chen
  */
-public class StreamDemo1 {
+public class HighLevelFunc {
 	
 	/**
 	 * 下面的java.util.function.Function<T, R>接口是一个FunctionalInterface.
@@ -50,18 +51,13 @@ public class StreamDemo1 {
 		return result;
 	}
 	
-
-	/** 
-	 * Consumer函数式接口用来接收单个参数并执行一些操作(accpet 函数)，并且没有返回值.
+	/**
+	 * 借助BiFunction实现reduce.
+	 * BiFunction是接收两个参数的Function<T, R>
 	 * @param input
-	 * @param c
+	 * @param fun
+	 * @return
 	 */
-	static <T> void forEach(List<T> input, Consumer<T> c){
-		for(T i : input){
-			c.accept(i);
-		}
-	}
-	
 	static <T> T reduce(List<T> input, BiFunction<T, T, T> fun){
 		
 		//尝试取第一个.
@@ -74,31 +70,22 @@ public class StreamDemo1 {
 		}	
 		return first;
 	}
+
+	/** 
+	 * Consumer函数式接口用来接收单个参数并执行一些操作(accpet 函数)，并且没有返回值.
+	 * @param input
+	 * @param c
+	 */
+	static <T> void forEach(List<T> input, Consumer<T> c){
+		for(T i : input){
+			c.accept(i);
+		}
+	}
+	
+	
 	
 	public static void main(String[] args){
-		List<Integer> nums = Arrays.asList(1, 2);
-		int value = reduce(nums, (ar1, ar2) -> ar1 + ar2);	
-		System.out.println(value);
+		
 	}
 	
-	public static void testMap(){
-		List<Integer> input = Arrays.asList(1, 2, 3);
-		List<Integer> inputMutiple = map(input, v -> v * v);
-		
-		List<String> input2 = Arrays.asList("apple", "orange", "pear");
-		List<String> upperInput2 = map(input2, v -> v.toUpperCase());
-	}
-
-	private static void test1() {
-	}
-	
-	/*public static void main(String[] args){
-		List<Integer> numbers = Arrays.asList();
-		Stream<Integer> stream = numbers.stream();
-		//BinaryOperator
-		Optional<Integer> op = stream.reduce((x1, x2) -> {return x1 + x2;});
-		//System.out.println(op.get());
-		//System.out.println(op.isPresent());
-		
-	}*/
 }

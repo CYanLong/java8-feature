@@ -49,7 +49,7 @@
 			}).start()
 		}
 
-> lambda表达式
+> **lambda表达式**
 
 &emsp;我们从上面看到，要实现带一个方法的接口，往往需要定义一个匿名内部类并重写接口方法，代码显得很臃肿。
 
@@ -136,6 +136,29 @@
 		return first;
 	}
 
+
+* `java.util.Consumer<T>`
+
+&emsp;这个函数式接口代表的函数 `void accept(T t)` 对参数t执行一些操作(Operation)，并且没有返回值。我们可以用来实现对集合元素的批量处理。
+	
+	static <T> forEach(List<T> input, Consumer<T> c){
+		for(T i : input){
+			c.accept(i);
+		}
+	}
+	#使用forEach打印集合所有的元素.
+	List<String> strs = Arrays.asList("Java1", "Java2", "Java3");
+	forEach(strs, str -> System.out.println(str));
+	
+---
+###四：方法引用(Method Reference)：
+
+&emsp;我们使用lambda表达式创建了匿名方法。通常情况下，一个lambda表达式仅仅是调用一个已存在的方法。这时，我们可以通过 `引用 (::)` 这个方法代替显示的调用它。
+
+	String::valueOf ==> x -> String.valueOf(x)
+	Object::toString ==>  x.toString()
+	x::toString() ==> x.toString()
+	ArrayList::new() ==> new ArrayList<>()
 
 
 

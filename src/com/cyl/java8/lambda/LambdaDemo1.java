@@ -11,7 +11,7 @@ public class LambdaDemo1 {
 	//在Java8之前,为了实现一个方法的接口,
 	//往往需要定义一个匿名类并复写接口方法.
 	//代码显得很臃肿.
-	private static void pre1() {
+	public static void pre1() {
 		String[] oldWay = "Improving code with Lambda expression in Java8".split(" ");
 		Arrays.sort(oldWay, new Comparator<String>(){
 			@Override
@@ -60,7 +60,5 @@ public class LambdaDemo1 {
 	
 	public static void main(String[] args){
 		
-		pre1();
-		now1();
 	}
 }
