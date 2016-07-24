@@ -71,7 +71,17 @@
 
 &emsp;**Lambda表达式是由参数列表 `()` ，箭头符号 `->` 和函数体组成。函数体既可以是一个表达式，也可以是一个语句块。**
 
-### 二：函数式接口(functional interface)：
+---
+###二：方法引用(Method Reference)：
+
+&emsp;我们使用lambda表达式创建了匿名方法。通常情况下，一个lambda表达式仅仅是调用一个已存在的方法。这时，我们可以通过 `引用 (::)` 这个方法代替显示的调用它。
+
+	String::valueOf ==> x -> String.valueOf(x)
+	Object::toString ==>  x.toString()
+	x::toString() ==> x.toString()
+	ArrayList::new() ==> new ArrayList<>()
+
+### 三：函数式接口(functional interface)：
 
 &emsp;面向对象编程和函数式编程中的基本元素(Basic Values)都是用来封装程序行为的。面向对象编程使用带有方法的对象封装行为，函数式编程使用函数封装行为。
 
@@ -79,7 +89,7 @@
 
 ---
 
-###三：java.util.function下常用的函数式接口。
+###四：java.util.function下常用的函数式接口。
 
 &emsp;Java8 在 `java.util.function` 包下新增了一些函数式接口。用来支持高阶函数。
 
@@ -149,16 +159,136 @@
 	#使用forEach打印集合所有的元素.
 	List<String> strs = Arrays.asList("Java1", "Java2", "Java3");
 	forEach(strs, str -> System.out.println(str));
-	
+
+
+* `java.util.function.Supplier<T>`
+
+&emsp;这个函数式接口代表的函数 `T get()` 用于产生值。通常，每次调用时产生的值不同。类似于生成器。
+
 ---
-###四：方法引用(Method Reference)：
+###五：Stream API
 
-&emsp;我们使用lambda表达式创建了匿名方法。通常情况下，一个lambda表达式仅仅是调用一个已存在的方法。这时，我们可以通过 `引用 (::)` 这个方法代替显示的调用它。
+&emsp;Java8引入的 Stream API主要目的在于弥补java函数式编程的缺陷。
 
-	String::valueOf ==> x -> String.valueOf(x)
-	Object::toString ==>  x.toString()
-	x::toString() ==> x.toString()
-	ArrayList::new() ==> new ArrayList<>()
+&emsp;Stream代表着一个元素序列 (sequence of elements) 并且可以在这个序列上执行不同的函数式计算。
+
+	List<String> myList = Arrays.asList("a1", "a2", "b1", "c1", "c2");
+	
+	myList.stream()
+		  .filter(s -> s.startsWith("c"))
+		  .map(String::toUpperCase)
+		  .sorted()
+		  .forEach(System.out::println);
+
+	//输出：
+	//C1
+	//C2
+
+
+* 像上面这样对 `Stream` 进行链式操作也叫作 `operation pipeline`。
+
+* 大多数的 `Stream` 操作接受 `lambda表达式` 作为参数(也可以说接受一个函数)，参数不同的函数式接口用来表示不同的函数行为。
+
+* 大多数传入的 `lambda表达式` 都是无状态的 `(stateless)` 和`non-interfering`（ `non-interfering` 表示操作不会修改底层的元素结构，例如删除,添加等）。
+
+* 通常Streams的创建来自于集合`(Collection)`，`List` 和 `Set`支持 `stream()` 和 `parallelStream()`用来创建 `Stream`。
+我们也可以通过 `Stream.of()` 来直接创建一个Stream。
+
+		Stream.of("a1", "a2", "a3")
+			.findFirst()
+			.ifPresent(System.out::println);
+
+* 除了 `Stream` 类之外，还有针对原始类型（`primitive data type`）工作的 Stream：`IntStream`，`LongStream`，`DoubleStream`。 这些Stream额外支持 `sum()` 和 `average()` 等聚合(aggregate)操作。并且，我们可以通过 `mapToXxx`进行原始类型的Stream和普通的Stream间的转换。
+	
+		Stream.of("a1", "a2", "a3")
+			.map(s -> s.substring(1))
+			.mapToInt(Integer::parseInt) //return IntStream
+			.average()
+			.ifPresent(System.out::println);
 
 
 
+* `IntStreams` 提供的 `range(1, 4)` 能代替普通的 `for-loop` 循环。
+
+
+> **intermediate operation / terminal operation**
+
+* `intermediate operation`的一个重要特点是推迟计算(`laziness`)。
+
+		Stream.of("d2", "a2", "b1", "b3", "c")
+			.filter(s -> {
+				System.out.println("filter: " + s);
+				return true;
+			});
+
+&emsp;&emsp;执行上面的代码片段不会有任何输出。因为 `intermediate operation` 将仅仅被执行当遇到一个 `terminal operation`。
+	
+		Stream.of("d2", "a2")
+			.map(s -> {
+				System.out.println("map: " + s);
+			})
+			.filter(s -> {
+				System.out.println("filter: " + s);
+				return s.startsWith("a");
+			})
+			.forEach(s -> System.out.println("forEach: " + s));
+		
+		//输出:
+		map: d2
+
+&emsp;&emsp;我们还发现整个执行顺序并不是将所有元素 `map` 之后再 `filter` 再`forEach`，而是以元素来执行整个调用链。 **所以，我们可以将 `filter`写在调用链的最前面来减少其他操作( `map` 等)的执行以提高性能。**
+
+* Stream 不能被重用。一旦你调用了任何 `terminal operation` 这个Stream就被关闭了。
+
+> Collect
+
+&emsp;&emsp;`Collect` 用来将 `Stream` 转换为不同`类型(kind)`的结果，像 `List` , `Set`, `Map`。 `Collect` 接受一个`Collector` ，包含四个不同的操作： `supplier`, `accumulator`, `combiner`, `finisher`。当然，Java8 提供了很多内置(build-in)collectors。
+		
+		class Person {
+    		String name;
+    		int age;
+
+    		Person(String name, int age) {
+       			this.name = name;
+        		this.age = age;
+    		}
+
+    		@Override
+    		public String toString() {
+       			return name;
+    		}
+		}
+
+		List<Person> persons =
+		    Arrays.asList(
+		        new Person("Max", 18),
+		        new Person("Peter", 23),
+		        new Person("Pamela", 23),
+		        new Person("David", 12));
+		
+
+&emsp;&emsp;上面创建了一个装有 Person 的 List。我们可以通过 stream 来操作这个 list，然后在通过 `collect` 转换为 List。
+
+
+	List<Person> filter = 
+			persons
+				.stream()
+				.filter(p -> p.name.startsWith("P"))
+				.collect(Collectors.toList());
+
+
+> 我们还可以将一个 List 通过 Stream 操作转换为 Map。
+
+&emsp;&emsp;下面的Collectors.toMap通过接受函数式参数来确定 keys 和 values。并且，我们可以指定一个merge 参数 (BiFunction interface) 来确定当key重复时如何做。
+	
+	Map<Integer, String> map = 
+			persons
+				.stream()
+				.collect(Collectors.toMap(
+					p -> p.age,
+					p -> p.name,
+					(name1, name2) -> name1 + ";" + name2));
+
+
+
+	

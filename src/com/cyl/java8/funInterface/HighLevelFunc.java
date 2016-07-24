@@ -83,7 +83,7 @@ public class HighLevelFunc {
 	}
 	
 	
-	
+	//Supplier
 	public static void main(String[] args){
 		
 	}
