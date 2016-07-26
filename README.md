@@ -2,6 +2,12 @@
 
 ###Summary about Java8 new features. &emsp;关于Java8 新特性的总结.
 ---
+Java8 于2014年3月发布，新版本的特性几乎都是围绕着 `函数式编程`。
+
+* 1.lambda表达式和Stream流:使代码更易于编写和有更好的可读性。
+* 2.提供了并行流，我们可以更方便的构建出并发程序。
+* 3.新的时间处理类库。
+
 ###一:Lambda表达式
 
 在讲解Lambda表达式之前，我们先来复习一下内部类。
@@ -168,9 +174,9 @@
 ---
 ###五：Stream API
 
-&emsp;Java8引入的 Stream API主要目的在于弥补java函数式编程的缺陷。
+集合API是Java API中最重要，最常用的部分。然而，集合仅仅提供了单一的迭代功能，我们通常要自己去迭代元素。Stream API 提供了更加抽象的处理数据集的接口。使得对数据集的操作更加简洁。
 
-&emsp;Stream代表着一个元素序列 (sequence of elements) 并且可以在这个序列上执行不同的函数式计算。
+Stream代表着一个元素序列 (sequence of elements) 并且可以在这个序列上执行不同的函数式计算。
 
 	List<String> myList = Arrays.asList("a1", "a2", "b1", "c1", "c2");
 	
@@ -212,6 +218,10 @@
 
 
 > **intermediate operation / terminal operation**
+
+&emsp;像 filter, sorted 和 map 这样可以被连接起来形成一个管道的操作叫做 中间操作。
+
+&emsp;像 collect, forEach 等终止管道并返回数据的操作叫做 结束操作。
 
 * `intermediate operation`的一个重要特点是推迟计算(`laziness`)。
 
@@ -291,4 +301,18 @@
 
 
 
-	
+> **parallel Streams**
+
+并行Stream使得我们可以 `声明式` 地编写并发程序。
+
+下面的程序使用 Parallel Stream 构建了利用多线程计算一组数据的方差。
+
+	public static double varianceStreams(double[] population){
+		double average = Arrays.stream(population).parallel().average().orElse(0.0);
+		double variance = Arrays.stream(population).parallel()
+				.map(p -> (p -> average) * (p -> average))
+				.sum() / population.length;
+		return variance;
+	}
+
+我们看到，通过使用Stream API内建的操作，我们以声明式的，而且非常简洁的方式构建了并发程序。
